@@ -31,12 +31,13 @@ fun PhonePunchScreen(
                 .padding(8.dp)
         ) {
 
-            Text("Punch Out")
+            Text( "Punch Out")
         }
-        val status = sharedViewModel.workerInfo
+        val status = sharedViewModel.workerInfo //testitulostukset
         Text("Firstname: ${status?.firstName}")
         Text("Lastname: ${status?.lastName}")
-        Text("atWork: ${status?.atWork}")
+        Text("isAtWork: ${status?.isAtWork}")
+        Text("Date: ${status?.date}")
         Text("received e-mail: $email")
 
 

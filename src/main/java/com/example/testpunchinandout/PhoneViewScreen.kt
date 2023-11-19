@@ -1,6 +1,5 @@
 package com.example.testpunchinandout
 
-import android.os.Parcelable
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,7 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 @OptIn(ExperimentalMaterial3Api::class) // jotta voidaan käyttää Material3 kirjastoa
@@ -32,8 +37,7 @@ fun PhoneViewScreen(
     navController: NavController,
     sharedViewModel: SharedViewModel) {
     var email by remember { mutableStateOf("") }
-    var workerInfo by remember { mutableStateOf(WorkStatus(false, "", "")) }
-
+    var workerInfo by remember { mutableStateOf(PunchClockResponse("", "", true, "")) }
 
     Column(modifier =
     Modifier
@@ -54,10 +58,22 @@ fun PhoneViewScreen(
         Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
-                workerInfo = submitEmail(email)  //Tähän vastaus backendistä
-                sharedViewModel.addWorkStatus(newWorkStatus = workerInfo)
-                Log.d("MainActivity", "info phoneView: $workerInfo")
-                navController.navigate("phone_punch_screen/$email")
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val result = submitEmail(email)
+                        withContext(Dispatchers.Main) {
+                            workerInfo = result
+                            sharedViewModel.addPunchClockResponse(newPunchClockResponse = result)
+                            Log.d("MainActivity", "info phoneView: $workerInfo")
+                            navController.navigate("phone_punch_screen/$email")
+                        }
+                    } catch (e: Exception) {
+                        // Handle error
+                        withContext(Dispatchers.Main) {
+                            // Handle error state if needed
+                        }
+                    }
+                }
             },
             modifier = Modifier
                 .padding(top = 8.dp)
@@ -70,24 +86,32 @@ fun PhoneViewScreen(
     }
 }
 
-data class WorkStatus(
-    val atWork: Boolean,
+data class PunchClockResponse(
     val firstName: String,
-    val lastName: String
+    val lastName: String,
+    val isAtWork: Boolean,
+    val date: String
 )
 
-private fun submitEmail(email: String): WorkStatus {
-    Log.d("MainActivity", "Email: $email")
-    // TODO: API KUTSU TÄHÄN VÄLIIN, GET REQUEST SERVERILLE, (TEKEMÄTTÄ SERVERIN PUOLELLA.)
-    val atWork = false
-    val firstName = "Keijo"
-    val lastName = "Keijokainen"
+private suspend fun submitEmail(email: String): PunchClockResponse {
+    return withContext(Dispatchers.IO) {
+        try {
+            Log.d("PhoneViewScreen", "Email: $email")
+            val response = RetrofitClient.service.getPunchClockResponse(email)
+            Log.d("PhoneViewScreen", "Response: $response")
 
-    return WorkStatus(atWork,firstName,lastName)
-    //TODO:  TULEE PALAUTTAMAAN BOOLEAN atWork TRUE / FALSE + etunimi ja sukunimi, JOKA KERTOO ETTÄ ONKO TÖISSÄ VAI EI, EI MITÄÄN MUUTA. Seuraava näkymä sen mukaan
-    // TODO: tyyliin if atWork = false, näkymä jossa Punch In ja Cancel, ja tietty henkilön etunimi ja sukunimi otsikkona.
-    // TODO: if atWork = true niin samanlainen näkymä mutta Punch Out ja Cancel ja sama otsikko
-    // TODO: Molempiin tervehdykset kun Punch In "Have a great day" tai vastaava ja Punch Out "See you next time" tai jotain muuta masentavaa
-    // TODO: Punch In ja Punch Out nappien painalluksesta tulee POST REQUEST SERVERILLE, (TEKEMÄTTÄ SERVERIN PUOLELLA).
-    // TODO: Post sisällöksi aika (muodossa HH:MM:SS), jos Punch In niin startTime ja jos Punch Out niin endTime, server käsittelee atWork logiikan.
+            val firstName = response.firstName
+            val lastName = response.lastName
+            val isAtWork = response.isAtWork
+            val date = response.date
+
+            // Construct and return the PunchClockResponse
+            PunchClockResponse(firstName, lastName, isAtWork, date)
+        } catch (e: Exception) {
+            // Handle network request failure or other exceptions
+            Log.e("MainActivity", "Network request failed", e)
+            // Return a default PunchClockResponse in case of failure
+            PunchClockResponse("", "", false, "")
+        }
+    }
 }

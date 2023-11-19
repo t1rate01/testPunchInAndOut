@@ -1,10 +1,13 @@
 package com.example.testpunchinandout
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -21,6 +24,11 @@ class MainActivity : ComponentActivity() {
 
         isTablet = isTabletDevice()  // tarkistaa onko laite tabletti vai puhelin
 
+        //val hannu = this.getSharedPreferences("Hannnnnu", Context.MODE_PRIVATE) // ----------------------------
+        //hannu.edit().putString("email", "hannukkkkkk").commit()
+        //val muuttuja = hannu.getString("emaill", "ei toiminU")
+
+
         setContent {
             TestPunchInAndOutTheme {
                 navController = rememberNavController()
@@ -29,16 +37,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ){
-
+                    //Text(text = muuttuja!!)
                     if(!isTablet){ //jos laite on puhelin
                         PhoneNavGraph(navController = navController)
                     } else {
                         TabletNavGraph(navController = navController)
                     }
                 }
-
-
-
             }
         }
     }

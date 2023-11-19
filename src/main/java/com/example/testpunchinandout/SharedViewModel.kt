@@ -7,10 +7,10 @@ import androidx.lifecycle.ViewModel
 
 class SharedViewModel : ViewModel()  {
 
-    var workerInfo by mutableStateOf<WorkStatus?>(null)
+    var workerInfo by mutableStateOf<PunchClockResponse?>(null)
         private set
 
-    fun addWorkStatus(newWorkStatus: WorkStatus){
-        workerInfo = newWorkStatus
+    fun addPunchClockResponse(newPunchClockResponse: PunchClockResponse){
+        workerInfo = newPunchClockResponse
     }
 }
