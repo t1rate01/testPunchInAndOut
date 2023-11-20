@@ -1,4 +1,4 @@
-package com.example.testpunchinandout
+package com.example.testpunchinandout.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.testpunchinandout.SharedViewModel
 
 @Composable
 fun PhonePunchScreen(
@@ -15,6 +16,8 @@ fun PhonePunchScreen(
     email: String,
     sharedViewModel: SharedViewModel
 ){
+    val status = sharedViewModel.workerInfo //käyttäjän tiedot sharedViewModelin kautta
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -22,18 +25,24 @@ fun PhonePunchScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text("Welcome ${status?.firstName} ${status?.lastName} ")
         Button(
             onClick = {
                 // TODO: API KUTSU TÄNNE
-                navController.popBackStack()
+                // TODO: VIESTI KÄYTTÄJÄLLE "HAVE A NICE DAY AT WORK/SEE YOU NEXT TIME", JA SEN JÄLKEEN PALUU EDELLISEEN
+
+                navController.popBackStack() //takaisin edelliseen ruutuun
             },
             modifier = Modifier
                 .padding(8.dp)
         ) {
 
-            Text( "Punch Out")
+            if (status != null) {
+                Text(if(status.isAtWork){ "Punch Out" } else { "Punch in"})
+            }
         }
-        val status = sharedViewModel.workerInfo //testitulostukset
+
+        //varmistellaan datan tila:
         Text("Firstname: ${status?.firstName}")
         Text("Lastname: ${status?.lastName}")
         Text("isAtWork: ${status?.isAtWork}")

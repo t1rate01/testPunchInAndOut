@@ -24,11 +24,6 @@ class MainActivity : ComponentActivity() {
 
         isTablet = isTabletDevice()  // tarkistaa onko laite tabletti vai puhelin
 
-        //val hannu = this.getSharedPreferences("Hannnnnu", Context.MODE_PRIVATE) // ----------------------------
-        //hannu.edit().putString("email", "hannukkkkkk").commit()
-        //val muuttuja = hannu.getString("emaill", "ei toiminU")
-
-
         setContent {
             TestPunchInAndOutTheme {
                 navController = rememberNavController()
@@ -37,7 +32,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ){
-                    //Text(text = muuttuja!!)
                     if(!isTablet){ //jos laite on puhelin
                         PhoneNavGraph(navController = navController)
                     } else {

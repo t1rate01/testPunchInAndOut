@@ -1,4 +1,4 @@
-package com.example.testpunchinandout
+package com.example.testpunchinandout.screens
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,19 +22,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.testpunchinandout.RetrofitClient
+import com.example.testpunchinandout.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import com.example.testpunchinandout.data.PunchClockResponse
 
 
 @OptIn(ExperimentalMaterial3Api::class) // jotta voidaan käyttää Material3 kirjastoa
 @Composable
 fun PhoneViewScreen(
     navController: NavController,
-    sharedViewModel: SharedViewModel) {
+    sharedViewModel: SharedViewModel
+) {
     var email by remember { mutableStateOf("") }
     var workerInfo by remember { mutableStateOf(PunchClockResponse("", "", true, "")) }
 
@@ -68,9 +69,9 @@ fun PhoneViewScreen(
                             navController.navigate("phone_punch_screen/$email")
                         }
                     } catch (e: Exception) {
-                        // Handle error
+
                         withContext(Dispatchers.Main) {
-                            // Handle error state if needed
+
                         }
                     }
                 }
@@ -86,31 +87,20 @@ fun PhoneViewScreen(
     }
 }
 
-data class PunchClockResponse(
-    val firstName: String,
-    val lastName: String,
-    val isAtWork: Boolean,
-    val date: String
-)
-
 private suspend fun submitEmail(email: String): PunchClockResponse {
     return withContext(Dispatchers.IO) {
         try {
-            Log.d("PhoneViewScreen", "Email: $email")
+
             val response = RetrofitClient.service.getPunchClockResponse(email)
-            Log.d("PhoneViewScreen", "Response: $response")
 
             val firstName = response.firstName
             val lastName = response.lastName
             val isAtWork = response.isAtWork
             val date = response.date
 
-            // Construct and return the PunchClockResponse
             PunchClockResponse(firstName, lastName, isAtWork, date)
         } catch (e: Exception) {
-            // Handle network request failure or other exceptions
             Log.e("MainActivity", "Network request failed", e)
-            // Return a default PunchClockResponse in case of failure
             PunchClockResponse("", "", false, "")
         }
     }

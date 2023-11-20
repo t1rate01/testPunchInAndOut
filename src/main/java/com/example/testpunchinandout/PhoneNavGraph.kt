@@ -1,6 +1,5 @@
 package com.example.testpunchinandout
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -8,6 +7,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.testpunchinandout.screens.PhonePunchScreen
+import com.example.testpunchinandout.screens.PhoneViewScreen
 
 @Composable
 fun PhoneNavGraph(navController: NavHostController) {
