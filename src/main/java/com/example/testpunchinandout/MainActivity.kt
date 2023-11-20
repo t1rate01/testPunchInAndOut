@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        isTablet = isTabletDevice()  // tarkistaa onko laite tabletti vai puhelin
+        isTablet = isTabletDevice()  // check if device is a phone or a tablet
 
         setContent {
             TestPunchInAndOutTheme {
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ){
-                    if(!isTablet){ //jos laite on puhelin
+                    if(!isTablet){ // when using a phone
                         PhoneNavGraph(navController = navController)
                     } else {
                         TabletNavGraph(navController = navController)
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun isTabletDevice(): Boolean {   // laitteen näytön koon perusteella päätellään onko tabletti vai puhelin
+    private fun isTabletDevice(): Boolean {   // Based on the screen size of the device, it is determined whether it is a tablet or a phone.
         val displayMetrics = resources.displayMetrics
         val width = displayMetrics.widthPixels / displayMetrics.xdpi
         val height = displayMetrics.heightPixels / displayMetrics.ydpi

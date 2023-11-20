@@ -27,7 +27,7 @@ fun PhonePunchScreen(
     email: String,
     sharedViewModel: SharedViewModel
 ) {
-    val status = sharedViewModel.workerInfo //käyttäjän tiedot muuttujaan sharedViewModelin kautta
+    val status = sharedViewModel.workerInfo //store user info via sharedViewModel,
 
     Column(
         modifier = Modifier

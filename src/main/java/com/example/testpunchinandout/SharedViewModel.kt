@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.testpunchinandout.data.PunchClockResponse
 
+// to share data between screens
+
 class SharedViewModel : ViewModel()  {
 
     var workerInfo by mutableStateOf<PunchClockResponse?>(null)

@@ -8,6 +8,8 @@ import com.example.testpunchinandout.data.PunchInOutResponse
 import retrofit2.http.Body
 import retrofit2.http.POST
 
+// endpoints for requests
+
 interface PunchClockService {
     @GET("api/report/punchclock/{email}")
     suspend fun getPunchClockResponse(@Path("email") email: String): PunchClockResponse

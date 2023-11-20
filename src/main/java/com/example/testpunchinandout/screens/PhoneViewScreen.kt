@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.testpunchinandout.data.PunchClockResponse
 
-
+// Main view for phone users
 
 @OptIn(ExperimentalMaterial3Api::class) // jotta voidaan käyttää Material3 kirjastoa
 @Composable
