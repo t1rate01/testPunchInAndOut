@@ -15,7 +15,7 @@ fun PhonePunchScreen(
     navController: NavController,
     email: String,
     sharedViewModel: SharedViewModel
-){
+) {
     val status = sharedViewModel.workerInfo //käyttäjän tiedot sharedViewModelin kautta
 
     Column(
@@ -25,30 +25,40 @@ fun PhonePunchScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Welcome ${status?.firstName} ${status?.lastName} ")
-        Button(
-            onClick = {
-                // TODO: API KUTSU TÄNNE
-                // TODO: VIESTI KÄYTTÄJÄLLE "HAVE A NICE DAY AT WORK/SEE YOU NEXT TIME", JA SEN JÄLKEEN PALUU EDELLISEEN
+        if (status?.isAtWork == true) { // jos ollaan töissä
+            Text("Welcome ${status?.firstName} ${status?.lastName} ")
+            Button(
+                onClick = {
+                    // TODO: API KUTSU TÄNNE
+                    // TODO: VIESTI KÄYTTÄJÄLLE "HAVE A NICE DAY AT WORK/SEE YOU NEXT TIME", JA SEN JÄLKEEN PALUU EDELLISEEN
+                    navController.popBackStack() //takaisin edelliseen ruutuun
+                },
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                Text("Punch Out")
 
-                navController.popBackStack() //takaisin edelliseen ruutuun
-            },
-            modifier = Modifier
-                .padding(8.dp)
-        ) {
-
-            if (status != null) {
-                Text(if(status.isAtWork){ "Punch Out" } else { "Punch in"})
             }
+        } else { //jos ei olla töissä
+            Text("Welcome ${status?.firstName} ${status?.lastName} ")
+            Button(
+                onClick = {
+                    // TODO: API KUTSU TÄNNE
+                    // TODO: VIESTI KÄYTTÄJÄLLE "HAVE A NICE DAY AT WORK/SEE YOU NEXT TIME", JA SEN JÄLKEEN PALUU EDELLISEEN
+
+                    navController.popBackStack() //takaisin edelliseen ruutuun
+                },
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                Text("Punch in")
+            }
+            //varmistellaan datan tila:
+            Text("Firstname: ${status?.firstName}")
+            Text("Lastname: ${status?.lastName}")
+            Text("isAtWork: ${status?.isAtWork}")
+            Text("Date: ${status?.date}")
+            Text("received e-mail: $email")
         }
-
-        //varmistellaan datan tila:
-        Text("Firstname: ${status?.firstName}")
-        Text("Lastname: ${status?.lastName}")
-        Text("isAtWork: ${status?.isAtWork}")
-        Text("Date: ${status?.date}")
-        Text("received e-mail: $email")
-
-
     }
 }

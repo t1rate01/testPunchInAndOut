@@ -99,7 +99,7 @@ private suspend fun submitEmail(email: String): PunchClockResponse {
             val date = response.date
 
             PunchClockResponse(firstName, lastName, isAtWork, date)
-        } catch (e: Exception) {
+        } catch (e: Exception) { // TODO: VIRHEILMOITUKSET KÄYTTÄJÄLLE JOS EI SPOSTIA
             Log.e("MainActivity", "Network request failed", e)
             PunchClockResponse("", "", false, "")
         }
