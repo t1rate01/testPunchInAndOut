@@ -10,7 +10,7 @@ import androidx.navigation.navArgument
 import com.example.testpunchinandout.screens.PhonePunchScreen
 import com.example.testpunchinandout.screens.PhoneViewScreen
 
-// navigation when app is used with phone
+// navigointi puhelimelle
 
 @Composable
 fun PhoneNavGraph(navController: NavHostController) {

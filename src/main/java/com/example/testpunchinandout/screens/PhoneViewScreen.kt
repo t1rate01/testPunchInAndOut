@@ -40,6 +40,8 @@ fun PhoneViewScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var workerInfo by remember { mutableStateOf(PunchClockResponse("", "", true, "")) }
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
 
     Column(modifier =
     Modifier
@@ -71,6 +73,8 @@ fun PhoneViewScreen(
                         }
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
+                            showDialog = true
+                            dialogMessage = e.message ?: "Email not found"  // TODO: tarkista mitä näkyy
                         }
                     }
                 }
@@ -82,6 +86,20 @@ fun PhoneViewScreen(
         ) {
             Text("Enter")
         }
+    }
+    if (showDialog) { // TODO: katso miltä näyttää
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Error") },
+            text = { Text(dialogMessage) },
+            confirmButton = {
+                Button(
+                    onClick = { showDialog = false }
+                ) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }
 
@@ -96,8 +114,9 @@ private suspend fun submitEmail(email: String): PunchClockResponse {
             val date = response.date
 
             PunchClockResponse(firstName, lastName, isAtWork, date)
-        } catch (e: Exception) { // TODO: VIRHEILMOITUKSET KÄYTTÄJÄLLE JOS EI LÖYDY SPOSTIA
+        } catch (e: Exception) { 
             Log.e("MainActivity", "Network request failed", e)
+            onFail("Email not found") // TODO: Pitääkö tähän laittaa juuri se virhe mitä servu sanoo vai voiko olla esim näin
             PunchClockResponse("", "", false, "")
         }
     }

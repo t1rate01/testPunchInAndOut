@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.testpunchinandout.ui.theme.TestPunchInAndOutTheme
 import kotlin.math.sqrt
+import android.content.pm.ActivityInfo
 
 class MainActivity : ComponentActivity() {
 
@@ -22,7 +23,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        isTablet = isTabletDevice()  // check if device is a phone or a tablet
+        isTablet = isTabletDevice()  // Tarkista onko tablet vai puhelin
+
+        // Pakota landscape jos tablet
+        if (isTablet) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
 
         setContent {
             TestPunchInAndOutTheme {
@@ -31,10 +37,10 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
-                ){
-                    if(!isTablet){ // when using a phone
+                ) {
+                    if (!isTablet) { // Kun puhelin
                         PhoneNavGraph(navController = navController)
-                    } else {
+                    } else { // Kun tablet
                         TabletNavGraph(navController = navController)
                     }
                 }
@@ -42,14 +48,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun isTabletDevice(): Boolean {   // Based on the screen size of the device, it is determined whether it is a tablet or a phone.
+    private fun isTabletDevice(): Boolean {
+        // Näytön koon perusteella katsotaan onko puhelin vai tablet
         val displayMetrics = resources.displayMetrics
         val width = displayMetrics.widthPixels / displayMetrics.xdpi
         val height = displayMetrics.heightPixels / displayMetrics.ydpi
         val screenSize = sqrt(width * width + height * height.toDouble())
         return screenSize >= 7
     }
-
 }
+
 
 

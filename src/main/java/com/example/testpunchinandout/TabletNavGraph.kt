@@ -7,9 +7,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.testpunchinandout.screens.TabletPunchScreen
 
-@Composable
+@Composable  // TODO: kutsuu nyt TabletView aluksi, mutta käyttää yhdessä PhonePunchScreeniä tablet nimellä, pakotettu landscapeen MainActivityssä
 fun TabletNavGraph(
-    navController: NavHostController
+    navController: NavHostController  
 ) {
     NavHost(
         navController = navController,
@@ -19,7 +19,7 @@ fun TabletNavGraph(
             TabletViewScreen(navController = navController)
         }
         composable("tablet_punch_screen") {
-            TabletPunchScreen(navController = navController)
+            PhonePunchScreen(navController = navController)
         }
 
 

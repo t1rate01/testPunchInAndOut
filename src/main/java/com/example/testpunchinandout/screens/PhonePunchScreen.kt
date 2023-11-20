@@ -19,15 +19,27 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter  // TODO: toimiiko nämä importit
 
 
-@Composable
+
+@Composable // TODO: muokattu käyttämään if isAtWork statusta ja muuttamaan siitä tekstejä ja toimintoja
 fun PhonePunchScreen(
     navController: NavController,
     email: String,
     sharedViewModel: SharedViewModel
 ) {
-    val status = sharedViewModel.workerInfo //store user info via sharedViewModel,
+    val status = sharedViewModel.workerInfo
+    var snackbarMessage by remember { mutableStateOf("") }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -38,53 +50,49 @@ fun PhonePunchScreen(
     ) {
         if (status?.isAtWork == true) { // jos ollaan töissä
             Text("Welcome ${status?.firstName} ${status?.lastName} ")
-            Button(
-                onClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            val punchData = PunchInOutResponse(time = "12:30:12", email = email) // TODO : KOVAKOODATTU DATA OIKEAKSI
-                            Log.d("PhonePunchScreen", "$punchData Tässä on punchdata")
-                            val response = RetrofitClient.service.postPunchOutResponse(punchData)
-                            Log.d("PhonePunchScreen", "$response uloskirjaus toimii")
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                Log.e("PhonePunchScreen", "Network request failed", e)
+            Button(onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        val punchData = PunchInOutResponse(time = currentTime, email = email)
+                        
+                        val response = if (status.isAtWork) {
+                            RetrofitClient.service.postPunchOutResponse(punchData)
+                        } else {
+                            RetrofitClient.service.postPunchInResponse(punchData)
+                        }
+            
+                        withContext(Dispatchers.Main) {
+                            if (response.isSuccessful) {
+                                snackbarMessage = if (status.isAtWork) "See you next time" else "Have a nice day at work"
+                                showSnackbar = true
+                                delay(3000) // TODO: Chekkaa onko sopiva aika
+                                navController.popBackStack() // Navigate back
+                            } else {
+                                snackbarMessage = "Error: ${response.errorBody()?.string() ?: "Unknown error"}"
+                                showSnackbar = true
                             }
                         }
-                    }
-                    // TODO: VIESTI KÄYTTÄJÄLLE "SEE YOU NEXT TIME"
-                    navController.popBackStack() //takaisin edelliseen ruutuun
-                },
-                modifier = Modifier
-                    .padding(8.dp)
-            ) {
-                Text("Punch Out")
-            }
-        } else { //jos ei olla töissä
-            Text("Welcome ${status?.firstName} ${status?.lastName} ")
-            Button(
-                onClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            val punchData = PunchInOutResponse(time = "12:30:12", email = email) // TODO : KOVAKOODATTU DATA OIKEAKSI
-                            Log.d("PhonePunchScreen", "$punchData Tässä on punchdata")
-                            val response = RetrofitClient.service.postPunchInResponse(punchData)
-                            Log.d("PhonePunchScreen", "$response Sisäänkirjaus toimii")
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                Log.e("PhonePunchScreen", "Network request failed", e)
-                            }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            snackbarMessage = "Network request failed: ${e.message}"
+                            showSnackbar = true
                         }
                     }
-                    // TODO: VIESTI KÄYTTÄJÄLLE "HAVE A NICE DAY AT WORK"
-                    navController.popBackStack() //takaisin edelliseen ruutuun
-                },
-                modifier = Modifier
-                    .padding(8.dp)
-            ) {
-                Text("Punch in")
+                }
+            }) {
+                Text(if (status.isAtWork) "Punch Out" else "Punch In")
             }
-        }
+
+            if (snackbarMessage.isNotEmpty()) {
+                scope.launch {
+                    snackbarHostState.showSnackbar(snackbarMessage)
+                    snackbarMessage = "" // Reset message after showing
+                }
+            }
+        
+           
+            
             //varmistellaan datan tila:
             Text("Firstname: ${status?.firstName}")
             Text("Lastname: ${status?.lastName}")
@@ -93,4 +101,7 @@ fun PhonePunchScreen(
             Text("received e-mail: $email")
         }
     }
+    SnackbarHost(hostState = snackbarHostState)
+}
+
 

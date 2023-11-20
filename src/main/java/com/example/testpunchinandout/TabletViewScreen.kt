@@ -23,10 +23,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.testpunchinandout.RetrofitClient
+import com.example.testpunchinandout.SharedViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.example.testpunchinandout.data.PunchClockResponse
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TabletViewScreen(navController: NavController) {
+fun TabletViewScreen(navController: NavController,
+                    SharedViewModel: SharedViewModel,) {
     var text by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -59,14 +70,41 @@ fun TabletViewScreen(navController: NavController) {
 
             // Enter button
             Button(onClick = {
-                //submitEmail(text)
-                // Enter nappi, kutsuu samaa funktiota kuin puhelimen Enter nappi, eli submitEmail
-                navController.navigate("tablet_punch_screen")
-                Log.d("MainActivity", "Enter pressed with text: $text")
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val result = submitEmail(text)
+                        withContext(Dispatchers.Main) {
+                            workerInfo = result
+                            sharedViewModel.addPunchClockResponse(newPunchClockResponse = result)
+                            navController.navigate("tablet_punch_screen/${text}")
+
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            showDialog = true
+                            dialogMessage = e.message ?: "Email not found"  // TODO: tarkista mitä näkyy
+                        }
+                    }
+                }
             }) {
                 Text("Enter")
             }
         }
+    }
+    if (showDialog) {  // TODO: katso miltä näyttää
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Error") },
+            text = { Text(dialogMessage) },
+            confirmButton = {
+                Button(
+                    onClick = { showDialog = false },
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }
 
@@ -83,12 +121,21 @@ fun TabletTextField(value: String, onValueChange: (String) -> Unit, label: Strin
     )
 }
 
-private fun submitEmail(email: String) {
-    Log.d("MainActivity", "Email: $email")  // TODO: GET REQUEST SERVERILLE, (TEKEMÄTTÄ SERVERIN PUOLELLA.)
-    //TODO:  TULEE PALAUTTAMAAN BOOLEAN atWork TRUE / FALSE + etunimi ja sukunimi, JOKA KERTOO ETTÄ ONKO TÖISSÄ VAI EI, EI MITÄÄN MUUTA. Seuraava näkymä sen mukaan
-    // TODO: tyyliin if atWork = false, näkymä jossa Punch In ja Cancel, ja tietty henkilön etunimi ja sukunimi otsikkona.
-    // TODO: if atWork = true niin samanlainen näkymä mutta Punch Out ja Cancel ja sama otsikko
-    // TODO: Molempiin tervehdykset kun Punch In "Have a great day" tai vastaava ja Punch Out "See you next time" tai jotain muuta masentavaa
-    // TODO: Punch In ja Punch Out nappien painalluksesta tulee POST REQUEST SERVERILLE, (TEKEMÄTTÄ SERVERIN PUOLELLA).
-    // TODO: Post sisällöksi aika (muodossa HH:MM:SS), jos Punch In niin startTime ja jos Punch Out niin endTime, server käsittelee atWork logiikan.
+private suspend fun submitEmail(email: String): PunchClockResponse {
+    return withContext(Dispatchers.IO) {
+        try {
+            val response = RetrofitClient.service.getPunchClockResponse(email)
+
+            val firstName = response.firstName
+            val lastName = response.lastName
+            val isAtWork = response.isAtWork
+            val date = response.date
+
+            PunchClockResponse(firstName, lastName, isAtWork, date)
+        } catch (e: Exception) { 
+            Log.e("MainActivity", "Network request failed", e)
+            onFail("Email not found") // TODO: Pitääkö tähän laittaa juuri se virhe mitä servu sanoo vai voiko olla esim näin
+            PunchClockResponse("", "", false, "")
+        }
+    }
 }
