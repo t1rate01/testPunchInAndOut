@@ -31,6 +31,7 @@ import kotlinx.coroutines.withContext
 import com.example.testpunchinandout.data.PunchClockResponse
 
 
+
 @OptIn(ExperimentalMaterial3Api::class) // jotta voidaan käyttää Material3 kirjastoa
 @Composable
 fun PhoneViewScreen(
@@ -69,9 +70,7 @@ fun PhoneViewScreen(
                             navController.navigate("phone_punch_screen/$email")
                         }
                     } catch (e: Exception) {
-
                         withContext(Dispatchers.Main) {
-
                         }
                     }
                 }
@@ -80,7 +79,6 @@ fun PhoneViewScreen(
                 .padding(top = 8.dp)
                 .size(200.dp, 50.dp),
             shape = MaterialTheme.shapes.medium
-
         ) {
             Text("Enter")
         }
@@ -90,7 +88,6 @@ fun PhoneViewScreen(
 private suspend fun submitEmail(email: String): PunchClockResponse {
     return withContext(Dispatchers.IO) {
         try {
-
             val response = RetrofitClient.service.getPunchClockResponse(email)
 
             val firstName = response.firstName
@@ -99,7 +96,7 @@ private suspend fun submitEmail(email: String): PunchClockResponse {
             val date = response.date
 
             PunchClockResponse(firstName, lastName, isAtWork, date)
-        } catch (e: Exception) { // TODO: VIRHEILMOITUKSET KÄYTTÄJÄLLE JOS EI SPOSTIA
+        } catch (e: Exception) { // TODO: VIRHEILMOITUKSET KÄYTTÄJÄLLE JOS EI LÖYDY SPOSTIA
             Log.e("MainActivity", "Network request failed", e)
             PunchClockResponse("", "", false, "")
         }

@@ -6,7 +6,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.testpunchinandout.screens.TabletPunchScreen
-import com.example.testpunchinandout.screens.TabletViewScreen
 
 @Composable
 fun TabletNavGraph(
